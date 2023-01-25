@@ -27,6 +27,7 @@ int main(int argc, char** argv) {
         perror("Could not read the directory!\nReason");
         exit(EXIT_FAILURE);
     }
+    closedir(directoryPointer);
     return 0;
 }
 
