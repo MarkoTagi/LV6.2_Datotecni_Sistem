@@ -42,5 +42,6 @@ int main(int argc, char** argv) {
     printf("\tNumber of links: %d\n", linkCount);
     free(directoryEntry);
     free(fileStatistics);
+    closedir(directoryPointer);
     return 0;
 }
