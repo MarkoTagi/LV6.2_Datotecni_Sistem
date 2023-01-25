@@ -20,8 +20,8 @@ int main(int argc, char** argv) {
         perror("Failed to get directory pointer!\nReason");
         exit(EXIT_FAILURE);
     }
-    struct stat* fileStatistics = (struct stat*)malloc(sizeof(struct stat*));
-    struct dirent* directoryEntry = (struct dirent*)malloc(sizeof(struct dirent*));
+    struct stat* fileStatistics = (struct stat*)malloc(sizeof(struct stat));
+    struct dirent* directoryEntry = (struct dirent*)malloc(sizeof(struct dirent));
     int subdirectoryCount = 0, fileCount = 0, linkCount = 0;
     while ((directoryEntry = readdir(directoryPointer)) != NULL) {
         if (strcmp(directoryPath, "/") != 0) strcat(directoryPath, "/");
