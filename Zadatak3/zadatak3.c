@@ -33,7 +33,7 @@ int containsString(const char* text, const char* pattern) {
         int patternPosition = 0;
         if (text[currentPosition] == pattern[patternPosition]) {
             while (text[++currentPosition] == pattern[++patternPosition]) ;
-            if (pattern[patternPosition] == '\0') return 1;
+            if (pattern[patternPosition] == '\0' || text[currentPosition] == '\0') return 1;
         }
         currentPosition += patternPosition + 1;
     }
