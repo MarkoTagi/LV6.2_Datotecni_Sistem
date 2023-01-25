@@ -53,7 +53,7 @@ int findPattern(const char* filePath, const char* pattern, int indentCount) {
         int notSelfOrParent = (strcmp(directoryEntry->d_name, ".") != 0) && (strcmp(directoryEntry->d_name, "..") != 0);
         if (notSelfOrParent) {
             for (int i = 0; i < indentCount; ++i) printf("\t");
-            printf("\\->");
+            if (indentCount > 0) printf("\\->");
         }
         if (containsString(directoryEntry->d_name, pattern)) {
             ++patternCount;
