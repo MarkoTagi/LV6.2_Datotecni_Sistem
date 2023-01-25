@@ -9,23 +9,16 @@
 #include <errno.h>
 #define MAX_LENGTH 1024
 
-char directoryPath[MAX_LENGTH];
-
 int containsString(const char*, const char*);
-void findFiles(DIR* directoryPointer, struct dirent* directoryEntry, char* pattern, int tabCount);
+int findPattern(const char* filePath, const char* pattern);
 
 int main(int argc, char** argv) {
     if (argc != 3) {
         fprintf(stderr, "bad usage: %s\n", argv[0]);
         exit(EXIT_FAILURE);
     }
-    strcpy(directoryPath, argv[1]);
-    DIR* directoryPointer = opendir(directoryPath);
-    if (directoryPointer == NULL) {
-        perror("Could not get directory pointer!\nReason");
-        exit(EXIT_FAILURE);
-    }
-    findFiles(directoryPointer, readdir(directoryPointer), argv[2], 0);
+    int filesFound = findPattern(argv[1], argv[2]);
+    printf("Files containing pattern [%s]: %d.\n", argv[2], filesFound);
     return 0;
 }
 
@@ -43,24 +36,32 @@ int containsString(const char* text, const char* pattern) {
     return 0;
 }
 
-void findFiles(DIR* directoryPointer, struct dirent* directoryEntry, char* pattern, int tabCount) {
-    errno = 0;
-    if (directoryEntry == NULL) return;
-    for (int i = 0; i < tabCount; ++i) printf("-");
-    if (containsString(directoryEntry->d_name, pattern)) printf("%s [*]\n", directoryEntry->d_name);
-    else if (strcmp(directoryEntry->d_name, ".") != 0 && strcmp(directoryEntry->d_name, "..") != 0) printf("%s\n", directoryEntry->d_name);
-    // sleep(2);
-    int currentTabCount = tabCount;
-    struct stat* fileStats = (struct stat*)malloc(sizeof(struct stat));
-    char tempDirectoryPath[MAX_LENGTH];
-    strcpy(tempDirectoryPath, directoryPath);
-    strcat(directoryPath, "/"); strcat(directoryPath, directoryEntry->d_name);
-    if (stat(directoryPath, fileStats) == -1) perror("Could not get file statistics!\nReason");
-    if (S_ISDIR(fileStats->st_mode) && strcmp(directoryEntry->d_name, ".") != 0 && strcmp(directoryEntry->d_name, "..") != 0) {
-        DIR* subdirectoryPointer = opendir(directoryPath);
-        findFiles(subdirectoryPointer, readdir(subdirectoryPointer), pattern, ++tabCount);
+int findPattern(const char* filePath, const char* pattern) {
+    int patternCount = 0;
+    DIR* directoryPointer = opendir(filePath);
+    if (directoryPointer == NULL) {
+        fprintf(stderr, "[%s] ", filePath); fflush(stderr);
+        perror("Failed to open directory!\nReason");
     }
-    strcpy(directoryPath, tempDirectoryPath);
-    findFiles(directoryPointer, readdir(directoryPointer), pattern, currentTabCount);
-    free(fileStats);
+    struct dirent* directoryEntry = (struct dirent*)malloc(sizeof(struct dirent));
+    errno = 0;
+    while ((directoryEntry = readdir(directoryPointer)) != NULL) {
+        if (containsString(directoryEntry->d_name, pattern)) {
+            ++patternCount;
+            printf("%s [*]\n", directoryEntry->d_name);
+        }
+        else if ((strcmp(directoryEntry->d_name, ".") != 0) && strcmp(directoryEntry->d_name, "..") != 0) printf("%s\n", directoryEntry->d_name);
+        char newFilePath[MAX_LENGTH]; strcpy(newFilePath, filePath);
+        strcat(newFilePath, "/"); strcat(newFilePath, directoryEntry->d_name);
+        struct stat* fileStats = (struct stat*)malloc(sizeof(struct stat));
+        if (stat(newFilePath, fileStats) == -1) {
+            fprintf(stderr, "[%s] ", newFilePath); fflush(stderr);
+            perror("Failed to get file statistics!\nReason");
+            exit(EXIT_FAILURE);
+        }
+        if ((strcmp(directoryEntry->d_name, ".") != 0) && (strcmp(directoryEntry->d_name, "..") != 0) && S_ISDIR(fileStats->st_mode)) patternCount += findPattern(newFilePath, pattern);
+        free(fileStats);
+    }
+    free(directoryEntry);
+    return patternCount;
 }
