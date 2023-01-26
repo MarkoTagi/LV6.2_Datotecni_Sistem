@@ -60,7 +60,7 @@ void removeFiles(const char* filePath, size_t greaterThan, int currentDepth) {
         bool notSelfOrParent = (strcmp(directoryEntry->d_name, ".") != 0) && (strcmp(directoryEntry->d_name, "..") != 0);
         if (S_ISDIR(fileStats->st_mode) && notSelfOrParent) removeFiles(newPath, greaterThan, currentDepth + 1);
         if (S_ISREG(fileStats->st_mode) && fileStats->st_size > (greaterThan * 1024)) {
-            printf("Removing [%s]...\n\tReason: It's size ( %ldB ) is greater than %ldkB.", directoryEntry->d_name, fileStats->st_size, greaterThan);
+            printf("Removing [%s]...\n\tReason: It's size ( %ldB ) is greater than %ldkB.\n", directoryEntry->d_name, fileStats->st_size, greaterThan);
             int pid = fork();
             if (pid == -1) {
                 perror("Failed to fork process!\n\tReason");
