@@ -78,4 +78,5 @@ void removeFiles(const char* filePath, size_t greaterThan, int currentDepth) {
     }
     closedir(directoryPointer);
     free(directoryEntry);
+    free(fileStats);
 }
