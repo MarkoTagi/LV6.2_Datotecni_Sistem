@@ -39,8 +39,13 @@ int main(int argc, char** argv) {
             printf(", %dB ( %d files ).\n", directorySize, fileCount);
         }
     }
+    if (errno != 0) {
+        perror("Error! Could not read directory.\n\tReason");
+        exit(EXIT_FAILURE);
+    }
     free(fileStats);
     free(directoryEntry);
+    closedir(directoryPointer);
     return 0;
 }
 
@@ -53,6 +58,7 @@ void getDirectorySize(const char* directoryPath, int* directorySize, int* fileCo
     }
     struct dirent* directoryEntry = (struct dirent*)malloc(sizeof(struct dirent));
     struct stat* fileStats = (struct stat*)malloc(sizeof(struct stat));
+    errno = 0;
     while ((directoryEntry = readdir(directoryPointer)) != NULL) {
         char newPath[PATH_MAX]; strcpy(newPath, directoryPath);
         strcat(newPath, "/"); strcat(newPath, directoryEntry->d_name);
@@ -66,6 +72,11 @@ void getDirectorySize(const char* directoryPath, int* directorySize, int* fileCo
         if (S_ISREG(fileStats->st_mode)) ++(*fileCount);
         if (notSelfOrParent) *directorySize += fileStats->st_size;
     }
+    if (errno != 0) {
+        perror("Error! Could not read the directory.\n\tReason");
+        exit(EXIT_FAILURE);
+    }
     free(fileStats);
     free(directoryEntry);
+    closedir(directoryPointer);
 }
